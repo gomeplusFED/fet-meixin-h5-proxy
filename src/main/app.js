@@ -14,6 +14,14 @@ var _env = require('./env.js');
 
 var _env2 = _interopRequireDefault(_env);
 
+var _menu = require('./menu.js');
+
+var _menu2 = _interopRequireDefault(_menu);
+
+var _package = require('../resource/package.json');
+
+var _package2 = _interopRequireDefault(_package);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 (0, _fixPath2.default)();
@@ -45,6 +53,8 @@ function createWindow() {
 
 	if (_env2.default === 'dev') {
 		mainWindow.webContents.openDevTools();
+	} else {
+		_electron.Menu.setApplicationMenu(_electron.Menu.buildFromTemplate((0, _menu2.default)(_electron.app)));
 	}
 
 	mainWindow.on('close', function (e) {

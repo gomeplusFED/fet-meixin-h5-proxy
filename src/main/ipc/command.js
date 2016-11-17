@@ -16,7 +16,23 @@ _electron.ipcMain.on('command-will-run', function (ev, command, pwd) {
 		command = 'echo ' + sudoPwd + ' | ' + command.replace('sudo', 'sudo -S');
 	}
 	resultCommand = command;
-	var child = (0, _common.execCmd)(command);
+
+	var child = null;
+
+	child = (0, _child_process.exec)(command, {
+		env: {
+			PATH: process.env.PATH
+		}
+	}, function (err, stdout, stderr) {
+		if (err.signal === 'SIGKILL') {
+			return;
+		}
+		if ((!!(err || stderr) || !sudoPwd) && /^sudo/.test(preCommand)) {
+			ev.sender.send('command-require-sudo', preCommand);
+			sudoPwd = '';
+		}
+	});
+
 	var pid = child.pid;
 	ev.sender.send('command-begin', pid);
 	child.stdout.on('data', function (data) {
@@ -26,11 +42,6 @@ _electron.ipcMain.on('command-will-run', function (ev, command, pwd) {
 		});
 	});
 	child.stderr.on('data', function (data) {
-		if (data && !sudoPwd && /^sudo/.test(preCommand)) {
-			ev.sender.send('command-require-sudo', preCommand);
-			sudoPwd = '';
-			return;
-		}
 		ev.sender.send('command-runing', {
 			data: data,
 			pid: pid
@@ -45,15 +56,5 @@ _electron.ipcMain.on('command-will-run', function (ev, command, pwd) {
 });
 
 _electron.ipcMain.on('command-force-close', function (ev, pid) {
-	if (sudoPwd && process.platform === 'darwin' || /^echo/.test(resultCommand)) {
-		(0, _common.execCmd)('echo ' + sudoPwd + ' | sudo -S kill -9 ' + pid, function () {
-			(0, _common.execCmd)('echo ' + sudoPwd + ' | sudo -S kill -9 ' + (parseInt(pid) + 2), function () {
-				(0, _common.execCmd)('echo ' + sudoPwd + ' | sudo -S kill -9 ' + (parseInt(pid) + 2 + 1));
-			});
-		});
-	} else {
-		try {
-			process.kill(pid);
-		} catch (e) {}
-	}
+	(0, _common.kill)(pid);
 });

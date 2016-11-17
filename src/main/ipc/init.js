@@ -34,7 +34,7 @@ function apply(success, fail) {
 		cmd = 'cd ' + curr + ' && npm link';
 	}
 	(0, _common.execCmd)(cmd, function (err, stdout, stderr) {
-		if (err) {
+		if (err && !sudoPwd) {
 			fail();
 			return;
 		}

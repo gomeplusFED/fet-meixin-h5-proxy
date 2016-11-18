@@ -4,7 +4,7 @@
 		"fix-path": "^2.0.0",
 		"minimist": "^1.2.0",
 		"ps-tree": "^1.1.0",
-		"sudo-prompt": "^6.2.0",
+		"sudo": "^1.0.3",
 		"commander": "^2.9.0",
 		"node-static": "^0.7.7",
 		"when": "^3.7.7"

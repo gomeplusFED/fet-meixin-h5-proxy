@@ -16,7 +16,6 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var platform = process.platform;
 var resourcePath = _path2.default.join(__dirname, '../../resource');
-var sudoPwd = '';
 
 var dialogInfoObj = {
 	type: 'info',
@@ -25,33 +24,18 @@ var dialogInfoObj = {
 	message: '提示信息'
 };
 
-function apply(success, fail) {
+function apply() {
 	var cmd = '';
 	var curr = (0, _common.normalizePath)(resourcePath);
 	if (platform !== 'win32') {
-		cmd = 'cd ' + curr + ' && echo ' + sudoPwd + ' | sudo -S npm link';
+		cmd = 'cd ' + curr + ' && echo ' + global.pwd + ' | sudo -S npm link';
 	} else {
 		cmd = 'cd ' + curr + ' && npm link';
 	}
 	(0, _common.execCmd)(cmd, function (err, stdout, stderr) {
-		if (err && !sudoPwd) {
-			fail();
-			return;
+		if (err) {
+			console.log(err);
 		}
-		success();
-	});
-}
-
-function tryToApply(ev) {
-	apply(function () {
-		ev.sender.send('app-init-has-check', {
-			error: 0
-		});
-	}, function () {
-		ev.sender.send('app-init-has-check', {
-			error: 1,
-			type: 'nopwd'
-		});
 	});
 }
 
@@ -90,15 +74,11 @@ _electron.ipcMain.on('app-init-will-check', function (ev, metaJSON) {
 		var cur = false;
 
 		checkCommand(metaJSON).then(function () {
-			tryToApply(ev);
+			apply();
 		}).catch(function () {
 			ev.sender.send('app-init-has-check', {
 				error: 0
 			});
 		});
 	});
-});
-
-_electron.ipcMain.on('app-init-input-pwd', function (ev, pwd) {
-	sudoPwd = pwd;
 });

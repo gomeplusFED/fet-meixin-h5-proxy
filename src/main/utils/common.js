@@ -51,20 +51,20 @@ var kill = exports.kill = function kill(pid) {
 	var callback = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : function () {};
 
 	if (process.platform !== 'win32') {
-		(0, _psTree2.default)(pid, function (err, children) {
-			[pid].concat(children.map(function (p) {
-				return p.PID;
-			})).forEach(function (tpid) {
-				_sudoPrompt2.default.exec('kill -9 ' + tpid, {
-					name: 'kill process'
-				}, function (err, stdout, stderr) {
-					if (err) {
-						console.log(err);
-					}
+		(function () {
+			var resultKilCmd = [];
+			(0, _psTree2.default)(pid, function (err, children) {
+				[pid].concat(children.map(function (p) {
+					return p.PID;
+				})).forEach(function (tpid) {
+					resultKilCmd.push(' sudo -S kill -9 ' + tpid);
 				});
+				try {
+					execCmd('echo ' + global.pwd + ' |' + resultKilCmd.join(' &&'));
+				} catch (e) {}
+				callback();
 			});
-			callback();
-		});
+		})();
 	} else {
 		try {
 			process.kill(pid, signal);

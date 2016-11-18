@@ -24,7 +24,7 @@ var dialogInfoObj = {
 	message: '提示信息'
 };
 
-function apply() {
+function apply(ev) {
 	var cmd = '';
 	var curr = (0, _common.normalizePath)(resourcePath);
 	if (platform !== 'win32') {
@@ -36,6 +36,9 @@ function apply() {
 		if (err) {
 			console.log(err);
 		}
+		ev.sender.send('app-init-has-check', {
+			error: 0
+		});
 	});
 }
 
@@ -74,8 +77,8 @@ _electron.ipcMain.on('app-init-will-check', function (ev, metaJSON) {
 		var cur = false;
 
 		checkCommand(metaJSON).then(function () {
-			apply();
-		}).catch(function () {
+			apply(ev);
+		}).catch(function (e) {
 			ev.sender.send('app-init-has-check', {
 				error: 0
 			});
